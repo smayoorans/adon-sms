@@ -1,0 +1,32 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean id="authDatabase" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.OAUTH.driverClassName}"/>
+        <property name="url" value="${jdbc.OAUTH.url}?useUnicode=true&amp;characterEncoding=UTF-8"/>
+        <property name="username" value="${jdbc.OAUTH.username}"/>
+        <property name="password" value="${jdbc.OAUTH.password}"/>
+    </bean>
+
+    <bean id="authDataSourceLibrary"
+          class="lk.dialog.ideabiz.library.APICall.DataProvider.MySQLCredentialProviderImpl">
+        <property name="authDataSource" ref="authDatabase"/>
+    </bean>
+
+    <bean id="subscriptionRepo" class="lk.dialog.ideabiz.subscription.SubscriptionRepo">
+        <property name="authDataSource" ref="authDatabase"/>
+    </bean>
+
+    <!--Construct API call library.  -->
+    <bean id="ideabizAPICall" class="lk.dialog.ideabiz.library.APICall.APICall">
+        <constructor-arg value="${application.http.timeout}"/>
+        <constructor-arg ref="authDataSourceLibrary"/>
+    </bean>
+
+    <!--Construct library manager for shared libs-->
+    <bean id="libraryManager" class="lk.dialog.ideabiz.library.LibraryManager">
+        <property name="apiCall" ref="ideabizAPICall"/>
+    </bean>
+</beans>
