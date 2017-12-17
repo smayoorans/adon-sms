@@ -8,6 +8,7 @@ import lk.dialog.ideabiz.library.model.APICall.APICallResponse;
 import lk.ideabiz.api.model.common.APIResponse.Response;
 import lk.ideabiz.api.model.common.PIN.PINSubmit;
 import lk.ideabiz.api.model.common.PIN.SubscriptionResponse;
+import lk.ideabiz.api.model.common.Payment.*;
 import lk.ideabiz.api.model.common.Subscription.v3.SubscriptionRequest;
 import lk.ideabiz.api.model.common.Subscription.v3.SubscriptionResponseWrap;
 import lk.ideabiz.api.model.common.Subscription.v3.SubscriptionStatusResponse;
@@ -98,6 +99,46 @@ public class SubscriptionHandler {
             pinSubmit.setPin(pin);
             pinSubmit.setServerRef(serverRef);
             return this.apiCall.sendAuthAPICall(1, this.url, "POST", header, this.gson.toJson(pinSubmit), false);
+        } catch (Exception ex) {
+            logger.error(ex);
+            throw ex;
+        }
+    }
+
+    public APICallResponse charge() throws Exception {
+        Map<String, String> header = new HashMap<>();
+        header.put("Content-Type", "application/json");
+        header.put("Accept", "application/json");
+        try {
+            PaymentRequestWrapper paymentRequestWrapper = new PaymentRequestWrapper();
+
+            final AmountTransactionRequest amountTransaction = new AmountTransactionRequest();
+            amountTransaction.setClientCorrelator("54321");
+            amountTransaction.setEndUserId("tel:+94774421435");
+
+            final PaymentAmount paymentAmount = new PaymentAmount();
+
+            final ChargingInformation chargingInformation = new ChargingInformation();
+            chargingInformation.setAmount(1.0);
+            chargingInformation.setCurrency("LKR");
+            chargingInformation.setDescription("Test charge");
+
+            final ChargingMetaData chargingMetaData = new ChargingMetaData();
+            chargingMetaData.setChannel("WAP");
+            chargingMetaData.setOnBehalfOf("IdeaBiz Test");
+            chargingMetaData.setTaxAmount(0.0);
+            chargingMetaData.setServiceID(null);
+
+            paymentAmount.setChargingMetaData(chargingMetaData);
+            paymentAmount.setChargingInformation(chargingInformation);
+
+            amountTransaction.setPaymentAmount(paymentAmount);
+            amountTransaction.setReferenceCode("REF-12345");
+            amountTransaction.setTransactionOperationStatus("Charged");
+
+            paymentRequestWrapper.setAmountTransaction(amountTransaction);
+
+            return this.apiCall.sendAuthAPICall(1, this.url, "POST", header, this.gson.toJson(paymentRequestWrapper), false);
         } catch (Exception ex) {
             logger.error(ex);
             throw ex;

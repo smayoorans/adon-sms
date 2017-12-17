@@ -17,3 +17,9 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `status` varchar(255) NOT NULL,
   PRIMARY KEY (`msisdn`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+INSERT INTO oauth2(accessToken, refreshToken, consumerKey, consumerSecret, scope, expire, tokenURL, lastUpdated)
+VALUES ('7bacb9508ac8f8b06457776e993c81', 'e6bfbda933fa68074ca293686ce5d27', 'LupDbfxIGbMXGRdyXukORD1GP48a',
+        'ePp0sojUUrEhViGITp_GoPTxMh0a','PRODUCTION', 3000 ,'https://ideabiz.lk/apicall/token', now() )
+

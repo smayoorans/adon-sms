@@ -9,6 +9,7 @@ import lk.dialog.ideabiz.subscription.SubscriptionHandler;
 import lk.dialog.ideabiz.subscription.SubscriptionRepo;
 import lk.ideabiz.api.model.common.APIResponse.Response;
 import lk.ideabiz.api.model.common.PIN.SubscriptionResponse;
+import lk.ideabiz.api.model.common.Payment.PaymentResponseWrapper;
 import lk.ideabiz.api.model.common.Subscription.v3.SubscriptionResponseWrap;
 import lk.ideabiz.api.model.common.Subscription.v3.SubscriptionStatusResponse;
 import org.apache.log4j.Logger;
@@ -36,6 +37,7 @@ public class MainController {
     private static final String UN_SUBSCRIPTION_URL = "https://ideabiz.lk/apicall/subscription/v3/unsubscribe";
     private static final String SUBSCRIPTION_CHECK_STATUS_URL = "https://ideabiz.lk/apicall/subscription/v3/status/tel%3A%2B";
     private static final String SMS_SEND_URL = "https://ideabiz.lk/apicall/smsmessaging/v3/outbound/87711/requests";
+    private static final String CHARGE_URL = "https://ideabiz.lk/apicall/payment/v3/94773400432/transactions/amount";
     private static Gson gson = null;
     private SubscriptionHandler subscriptionHandler;
     private SMSHandler smsHandler;
@@ -79,6 +81,7 @@ public class MainController {
 
     @RequestMapping(value = "subscribe", method = RequestMethod.GET)
     public String subscribePage() {
+        charge();
         return "subscribe";
     }
 
@@ -156,7 +159,29 @@ public class MainController {
                 String data = response.getData().toString();
                 SubscriptionResponse subscriptionResponse = gson.fromJson(data.replace("tel:+", ""), SubscriptionResponse.class);
                 subscriptionRepo.insertSubscriber(subscriptionResponse);
+
                 return subscriptionResponse.getStatus();
+            } else {
+                Response response = gson.fromJson(apiCallResponse.getBody(), Response.class);
+                return response.getMessage();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    private String charge() {
+        subscriptionHandler = new SubscriptionHandler(CHARGE_URL, LibraryManager.getApiCall());
+        try {
+            APICallResponse apiCallResponse = subscriptionHandler.charge();
+            if (apiCallResponse.getStatusCode() == 200) {
+                Response response = gson.fromJson(apiCallResponse.getBody(), Response.class);
+                String data = response.getData().toString();
+                PaymentResponseWrapper paymentResponseWrapper = gson.fromJson(data, PaymentResponseWrapper.class);
+                System.out.println(paymentResponseWrapper);;
+                return "Response";
             } else {
                 Response response = gson.fromJson(apiCallResponse.getBody(), Response.class);
                 return response.getMessage();
